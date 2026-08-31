@@ -1,0 +1,13 @@
+{
+  "name": "KANLUEM กันลืม",
+  "short_name": "KANLUEM",
+  "description": "Family Life Assistant — Capture once → Remind → Keep history",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0284c7",
+  "icons": [
+    { "src": "/icons/192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
