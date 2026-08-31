@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/family") ||
     request.nextUrl.pathname.startsWith("/onboarding") ||
     request.nextUrl.pathname.startsWith("/calendar") ||
-    request.nextUrl.pathname.startsWith("/notifications")
+    request.nextUrl.pathname.startsWith("/notifications") ||
+    request.nextUrl.pathname.startsWith("/vehicles")
 
   const isAuth = request.nextUrl.pathname.startsWith("/login")
 
