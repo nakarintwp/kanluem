@@ -44,7 +44,8 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/ai") ||
     request.nextUrl.pathname.startsWith("/ocr") ||
     request.nextUrl.pathname.startsWith("/intelligence") ||
-    request.nextUrl.pathname.startsWith("/history")
+    request.nextUrl.pathname.startsWith("/history") ||
+    request.nextUrl.pathname.startsWith("/security")
 
   const isAuth = request.nextUrl.pathname.startsWith("/login")
 
