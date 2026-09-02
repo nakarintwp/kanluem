@@ -5,7 +5,17 @@ import { cookies } from "next/headers"
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
+  const error = searchParams.get("error")
+  const errorDesc = searchParams.get("error_description")
   const next = searchParams.get("next") ?? "/dashboard"
+
+  // If Supabase/G Google returns error directly in callback, forward it
+  if (error) {
+    console.error("callback error from provider:", error, errorDesc)
+    return NextResponse.redirect(
+      `${origin}/login?error=auth&error_code=${encodeURIComponent(error)}&error_description=${encodeURIComponent(errorDesc || "")}`
+    )
+  }
 
   if (code) {
     const cookieStore = await cookies()
