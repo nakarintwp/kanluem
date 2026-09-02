@@ -7,12 +7,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function LoginPage() {
   const handleGoogleLogin = async () => {
     const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
+    if (error) {
+      console.error("Google login error:", error)
+      alert(`Login failed: ${error.message}`)
+    } else if (data?.url) {
+      window.location.href = data.url
+    }
   }
 
   return (
