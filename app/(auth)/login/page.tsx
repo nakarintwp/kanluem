@@ -1,23 +1,40 @@
 "use client"
 
+import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function LoginPage() {
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [debug, setDebug] = useState<string>("")
+
   const handleGoogleLogin = async () => {
-    const supabase = createClient()
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-    if (error) {
-      console.error("Google login error:", error)
-      alert(`Login failed: ${error.message}`)
-    } else if (data?.url) {
-      window.location.href = data.url
+    setErrorMsg(null)
+    setDebug(`URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 30)}... | Clicked at ${new Date().toLocaleTimeString()}`)
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (error) {
+        console.error("Google login error:", error)
+        setErrorMsg(`${error.message} (code: ${error.status})`)
+        setDebug((d) => `${d} | Error: ${error.message}`)
+      } else if (data?.url) {
+        setDebug((d) => `${d} | Redirecting to ${data.url.slice(0, 50)}...`)
+        window.location.href = data.url
+      } else {
+        setErrorMsg("No URL returned, check Supabase Google provider is enabled")
+        setDebug((d) => `${d} | No URL, data: ${JSON.stringify(data)}`)
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setErrorMsg(`Exception: ${msg}`)
+      setDebug((d) => `${d} | Exception: ${msg}`)
     }
   }
 
@@ -41,6 +58,9 @@ export default function LoginPage() {
             </span>
             ดำเนินการต่อด้วย Google
           </Button>
+          {errorMsg && <div className="mt-3 bg-red-50 border border-red-200 rounded-xl p-2 text-xs text-red-700">{errorMsg}</div>}
+          {debug && <div className="mt-2 bg-slate-100 border rounded-xl p-2 text-[10px] font-mono break-all">{debug}</div>}
+          <div className="mt-2 text-[10px] text-slate-400">Supabase: {process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅ Env OK" : "❌ Env missing"} • Vercel env must be set + Redeploy</div>
           <div className="mt-4 text-center text-[11px] text-slate-400">
             PWA ติดตั้งได้ • Web Push พร้อม • ครอบครัวปลอดภัยด้วย RLS
           </div>
