@@ -4,10 +4,16 @@ import { createServerClient } from "@supabase/ssr"
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  // Graceful fallback if env not set (Vercel without env → don't crash, just pass through)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return supabaseResponse
+  }
+
+  let supabase: ReturnType<typeof createServerClient>
+  try {
+    supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -20,12 +26,18 @@ export async function middleware(request: NextRequest) {
           )
         },
       },
-    }
-  )
+    })
+  } catch {
+    return supabaseResponse
+  }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const res = await supabase.auth.getUser()
+    user = res.data.user
+  } catch {
+    return supabaseResponse
+  }
 
   const isProtected =
     request.nextUrl.pathname.startsWith("/dashboard") ||
