@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function LoginPage() {
+export const dynamic = "force-dynamic"
+
+function LoginContent() {
   const searchParams = useSearchParams()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [debug, setDebug] = useState<string>("")
@@ -79,5 +81,13 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   )
 }
