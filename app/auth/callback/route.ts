@@ -29,7 +29,9 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
+    console.error("exchangeCodeForSession error:", error)
+    return NextResponse.redirect(`${origin}/login?error=auth&error_code=${error.code}&error_description=${encodeURIComponent(error.message)}`)
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`)
+  return NextResponse.redirect(`${origin}/login?error=auth&error_code=no_code`)
 }

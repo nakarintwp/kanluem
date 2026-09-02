@@ -1,13 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function LoginPage() {
+  const searchParams = useSearchParams()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [debug, setDebug] = useState<string>("")
+
+  useEffect(() => {
+    const err = searchParams.get("error")
+    const code = searchParams.get("error_code")
+    const desc = searchParams.get("error_description")
+    if (err) {
+      setErrorMsg(`${err}${code ? ` (${code})` : ""}${desc ? `: ${decodeURIComponent(desc)}` : ""}`)
+      setDebug(`Callback error: ${err} | ${code} | ${desc?.slice(0, 100)}`)
+    }
+  }, [searchParams])
 
   const handleGoogleLogin = async () => {
     setErrorMsg(null)
