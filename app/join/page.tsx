@@ -1,7 +1,6 @@
 import { createServerClientSSR } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
-import { isInviteValid } from "@/features/family/invite"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
@@ -9,7 +8,6 @@ export default async function JoinPage() {
   async function joinFamily(formData: FormData) {
     "use server"
     const { createServerClientSSR } = await import("@/lib/supabase/server")
-    const { isInviteValid } = await import("@/features/family/invite")
     const supabase = await createServerClientSSR()
     const {
       data: { user },
@@ -20,14 +18,9 @@ export default async function JoinPage() {
       .toUpperCase()
     if (!code) throw new Error("กรุณากรอกรหัส")
 
-    const { data: invite, error } = await supabase.from("family_invitations").select("*").eq("code", code).single()
-    if (error || !invite) throw new Error("ไม่พบรหัสเชิญ")
-    const inv = invite as { id: string; family_id: string; status: string; expires_at: string | null; max_uses: number | null; used_count: number }
-    if (!isInviteValid(inv)) throw new Error("รหัสหมดอายุ / ถูกยกเลิก / ครบจำนวนแล้ว")
-
-    const { error: memErr } = await supabase.from("family_members").insert({ family_id: inv.family_id, user_id: user.id, role: "member" })
-    if (memErr) throw new Error(memErr.message)
-    await supabase.from("family_invitations").update({ used_count: inv.used_count + 1 }).eq("id", inv.id)
+    // ตรวจสอบ code + insert membership + นับการใช้ ในฐานข้อมูล (join_family RPC)
+    const { error } = await supabase.rpc("join_family", { invite_code: code })
+    if (error) throw new Error(error.message)
 
     revalidatePath("/family")
     redirect("/dashboard")

@@ -16,6 +16,9 @@ git push -u origin master
    - `supabase/migrations/00001_profiles.sql`
    - `00002_families.sql` → `00003_invitations.sql` → `00004_reminders.sql` → `00005_notifications.sql` → `00006_vehicles.sql` → `00007_medications.sql` → `00008_appointments.sql` → `00009_home.sql` → `00010_finance.sql` → `00011_documents.sql` → `00012_voice.sql` → `00013_history.sql`
    - หรือ `supabase db push` ถ้าติดตั้ง CLI
+   - ⚠️ อย่าข้าม: migrations เป็น idempotent รันซ้ำได้ ต้องครบทั้ง 13 ไฟล์ ไม่งั้นหน้าเว็บจะ error
+   - ⚠️ RLS สำคัญมาก: `00002` ใช้ helper `is_family_member()` / `can_insert_family_member()` (security definer) เพื่อเลี่ยง infinite recursion ใน policy ของ `family_members`
+   - เข้าร่วมครอบครัวใช้ฟังก์ชัน `join_family(code)` (RPC) ใน `00003` — app เรียกผ่าน `supabase.rpc("join_family", …)` ไม่ใช่ insert ตรง
 4. Auth → Providers → Enable Google → ใส่ Client ID/Secret (จาก Google Cloud Console) → Redirect URL: `https://<project>.supabase.co/auth/v1/callback`
 5. Storage → Create bucket `documents` → **Private** (ไม่ public) → Policies: allow family_members RLS (ดู `00011_documents.sql` comment)
 
